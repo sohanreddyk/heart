@@ -1,0 +1,106 @@
+from tkinter import Tk, Label, Button, Entry, messagebox
+from tkinter import ttk
+import joblib
+import pandas as pd
+
+# Load the trained model
+model = joblib.load('heart_disease_model.pkl') # Load the saved model
+
+# Function to make a prediction based on the user's input
+def predict_prognosis():
+    try:
+        # Fetch input data from the GUI
+        age = int(age_entry.get())
+        sex = int(sex_combobox.get())
+        cp = int(cp_combobox.get())
+        trestbps = int(trestbps_entry.get())
+        chol = int(cholesterol_entry.get())
+        fbs = int(fbs_combobox.get())
+        restecg = int(restecg_combobox.get())
+        thalach = int(thalach_entry.get())
+        exang = int(exang_combobox.get())
+        oldpeak = float(oldpeak_entry.get())
+        slope = int(slope_combobox.get())
+        ca = int(ca_combobox.get())
+        thal = int(thal_combobox.get())
+
+        # Prepare data for prediction
+        input_data = pd.DataFrame([[age, sex, cp, trestbps, chol, fbs, restecg, thalach, exang, oldpeak, slope, ca, thal]],
+                                  columns=['age', 'sex', 'cp', 'trestbps', 'chol', 'fbs', 'restecg', 'thalach', 'exang', 'oldpeak', 'slope', 'ca', 'thal'])
+
+        # Make prediction using the trained model
+        prediction = model.predict(input_data)
+        if prediction == 1:
+            result = "Heart Disease Detected"
+        else:
+            result = "No Heart Disease"
+
+        # Display the result
+        result_label.config(text=f"Predicted Prognosis: {result}", fg="green", font=("Arial", 14, "bold"))
+
+    except ValueError:
+        messagebox.showerror("Invalid Input", "Please enter valid numbers for all fields.")
+
+# Initialize the Tkinter GUI
+root = Tk()
+root.title("Heart Disease Prediction System")
+root.geometry("900x850") # Increased height and width for better spacing
+root.config(bg="#f0f0f0") # Set a light background color
+
+# Title label
+title_label = Label(root, text="Heart Disease Prediction System", font=("Arial", 20, "bold"), bg="#62a7ff", fg="white")
+title_label.pack(fill="both", pady=20)
+
+# Add Labels and Entry fields for user input
+input_labels = [
+    ("Age", 50),
+    ("Sex (1=Male, 0=Female)", 100),
+    ("Chest Pain Type (cp)", 150),
+    ("Resting Blood Pressure (trestbps)", 200),
+    ("Cholesterol (chol)", 250),
+    ("Fasting Blood Sugar (fbs)", 300),
+    ("Resting Electrocardiogram (restecg)", 350),
+    ("Max Heart Rate (thalach)", 400),
+    ("Exercise Induced Angina (exang)", 450),
+    ("Oldpeak", 500),
+    ("Slope", 550),
+    ("Number of Major Vessels (ca)", 600),
+    ("Thalassemia (thal)", 650),
+]
+
+# Creating dynamic fields (entries and comboboxes)
+input_fields = []
+for label, y in input_labels:
+    Label(root, text=label, font=("Arial", 12), bg="#f0f0f0").place(x=50, y=y)
+    if label in ["Age", "Resting Blood Pressure (trestbps)", "Cholesterol (chol)", "Max Heart Rate (thalach)", "Oldpeak"]:
+        entry = Entry(root, font=("Arial", 12), width=25)
+        entry.place(x=300, y=y) # Shifted to the right (from x=250 to x=300)
+        input_fields.append(entry)
+    else:
+        values = {
+            "Sex (1=Male, 0=Female)": [0, 1],
+            "Chest Pain Type (cp)": [0, 1, 2, 3],
+            "Fasting Blood Sugar (fbs)": [0, 1],
+            "Resting Electrocardiogram (restecg)": [0, 1, 2],
+            "Exercise Induced Angina (exang)": [0, 1],
+            "Slope": [0, 1, 2],
+            "Number of Major Vessels (ca)": [0, 1, 2, 3],
+            "Thalassemia (thal)": [3, 6, 7],
+        }
+        combobox = ttk.Combobox(root, values=values[label], font=("Arial", 12), width=22)
+        combobox.place(x=300, y=y) # Shifted to the right (from x=250 to x=300)
+        input_fields.append(combobox)
+
+# Store all entry widgets for easy access
+age_entry, sex_combobox, cp_combobox, trestbps_entry, cholesterol_entry, fbs_combobox, restecg_combobox, thalach_entry, exang_combobox, oldpeak_entry, slope_combobox, ca_combobox, thal_combobox = input_fields
+
+# Button to predict the prognosis
+predict_button = Button(root, text="Predict Prognosis", font=("Arial", 14), bg="#62a7ff", fg="white", command=predict_prognosis)
+predict_button.place(x=250, y=725, width=400, height=50)
+
+# Label to display the result
+result_label = Label(root, text="", font=("Arial", 14), bg="#f0f0f0", fg="green")
+result_label.place(x=50, y=775)
+
+# Run the application
+root.mainloop()
